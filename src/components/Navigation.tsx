@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Command, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Link } from "react-router-dom";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,10 +41,7 @@ const Navigation = () => {
   };
 
   const navItems = [
-    { name: "Features", href: "#features", onClick: () => scrollToSection('features') },
-    { name: "Prices", href: "#pricing", onClick: () => scrollToSection('pricing') },
-    { name: "Live Trading", href: "/trading", onClick: () => window.location.href = '/trading' },
-    { name: "Testimonials", href: "#testimonials", onClick: () => scrollToSection('testimonials') },
+    { name: "Live Trading", href: "/trading", isExternal: true },
   ];
 
   return (
@@ -64,27 +62,19 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (item.onClick) {
-                    item.onClick();
-                  }
-                }}
+                to={item.href}
                 className="text-sm text-muted-foreground hover:text-foreground transition-all duration-300"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
-            <Button 
-              onClick={() => scrollToSection('cta')}
-              size="sm"
-              className="button-gradient"
-            >
-              Start Trading
-            </Button>
+            <Link to="/trading">
+              <Button size="sm" className="button-gradient">
+                Start Trading
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Navigation */}
@@ -98,30 +88,23 @@ const Navigation = () => {
               <SheetContent className="bg-[#1B1B1B]">
                 <div className="flex flex-col gap-4 mt-8">
                   {navItems.map((item) => (
-                    <a
+                    <Link
                       key={item.name}
-                      href={item.href}
+                      to={item.href}
                       className="text-lg text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setIsMobileMenuOpen(false);
-                        if (item.onClick) {
-                          item.onClick();
-                        }
-                      }}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.name}
-                    </a>
+                    </Link>
                   ))}
-                  <Button 
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      scrollToSection('cta');
-                    }}
-                    className="button-gradient mt-4"
-                  >
-                    Start Trading
-                  </Button>
+                  <Link to="/trading">
+                    <Button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="button-gradient mt-4"
+                    >
+                      Start Trading
+                    </Button>
+                  </Link>
                 </div>
               </SheetContent>
             </Sheet>

@@ -71,33 +71,54 @@ const Trading = () => {
   };
 
   const connectWebSocket = () => {
-    const symbols = cryptos.map(c => c.symbol.toLowerCase()).join('/');
-    const wsUrl = `wss://stream.binance.com:9443/ws/${symbols}@ticker`;
-    
-    wsRef.current = new WebSocket(wsUrl);
-    
-    wsRef.current.onopen = () => {
-      console.log('Binance WebSocket connected');
-    };
-    
-    wsRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.s && data.c && data.P) {
-        updateCryptoData(data.s, parseFloat(data.c), parseFloat(data.P));
-      }
-    };
-    
-    wsRef.current.onclose = () => {
-      console.log('WebSocket closed, reconnecting...');
-      setTimeout(connectWebSocket, 3000);
-    };
-    
-    wsRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    // Create individual WebSocket connections for each symbol
+    cryptos.forEach(crypto => {
+      const wsUrl = `wss://stream.binance.com:9443/ws/${crypto.symbol.toLowerCase()}@ticker`;
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log(`WebSocket connected for ${crypto.symbol}`);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.s && data.c && data.P) {
+            updateCryptoData(data.s, parseFloat(data.c), parseFloat(data.P));
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log(`WebSocket closed for ${crypto.symbol}, reconnecting...`);
+        setTimeout(() => connectWebSocket(), 3000);
+      };
+      
+      ws.onerror = (error) => {
+        console.error(`WebSocket error for ${crypto.symbol}:`, error);
+      };
+    });
   };
 
   useEffect(() => {
+    // Fetch initial data and connect WebSocket
+    const fetchInitialData = async () => {
+      try {
+        const symbols = cryptos.map(c => c.symbol).join(',');
+        const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=["${symbols.split(',').join('","')}"]`);
+        const data = await response.json();
+        
+        data.forEach((ticker: any) => {
+          updateCryptoData(ticker.symbol, parseFloat(ticker.lastPrice), parseFloat(ticker.priceChangePercent));
+        });
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      }
+    };
+
+    fetchInitialData();
     connectWebSocket();
     
     return () => {
@@ -105,7 +126,7 @@ const Trading = () => {
         wsRef.current.close();
       }
     };
-  }, [cryptos.length]);
+  }, []);
 
   const addNewCrypto = () => {
     if (newSymbol && !cryptos.find(c => c.symbol === newSymbol.toUpperCase())) {
