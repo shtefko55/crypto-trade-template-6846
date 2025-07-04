@@ -66,10 +66,10 @@ const Index = () => {
             className="flex flex-col sm:flex-row gap-4 items-start"
           >
             <Button size="lg" className="button-gradient">
-              Start Trading Now
+              <a href="/trading">Start Trading Now</a>
             </Button>
             <Button size="lg" variant="link" className="text-white">
-              View Markets <ArrowRight className="ml-2 w-4 h-4" />
+              <a href="/trading">View Markets <ArrowRight className="ml-2 w-4 h-4" /></a>
             </Button>
           </motion.div>
         </div>
